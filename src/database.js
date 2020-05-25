@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const consumer = require('./consumer/games.consumer.js')
+const days = process.env.GAME_UPDATE_FREQUENCY_DAYS || 1;
 
 const URI = process.env.MONGODB_URI || 'mongodb://localhost/merntest';
 
@@ -11,7 +12,8 @@ mongoose.connect(URI, {
 
 const connection = mongoose.connection;
 
-connection.once('open', async () => {
+connection.once('open', () => {
   console.log("Database is connected")
-  await consumer.updateGames();
+  consumer.updateGames();
+  setInterval(consumer.updateGames, days * 1000 * 60 * 60 * 24)
 });

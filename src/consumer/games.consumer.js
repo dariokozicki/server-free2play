@@ -1,8 +1,8 @@
 const fetch = require("node-fetch");
+const Game = require('../models/Game')
 
 const consumer = {
   updateGames: async () => {
-    //setInterval(async () => {
     try {
       let games = await Promise.all([
         fetch("https://api1.origin.com/xsearch/store/en_us/mex/products?searchTerm=free&sort=rank%20desc%2CreleaseDate%20desc%2Ctitle%20desc&start=0&rows=20&isGDP=true", {
@@ -41,34 +41,46 @@ const consumer = {
         })
           .then(games => games.json())
           .then(games => games.data.Catalog.searchStore.elements.map(game => epicToGame(game))),
-        fetch('https://www.gog.com/games/ajax/filtered?mediaType=game&page=1&price=free&sort=popularity')
-          .then(games => games.json())
-          .then(games => games.products.map(game => gogToGame(game))),
-        fetch("https://gamejolt.com/site-api/web/discover", {
-          "credentials": "include",
-          "headers": {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0",
-            "Accept": "application/json, text/plain, */*",
-            "Accept-Language": "es-AR,es;q=0.8,en-US;q=0.5,en;q=0.3",
-            "Pragma": "no-cache",
-            "Cache-Control": "no-cache"
-          },
-          "referrer": "https://gamejolt.com/",
-          "method": "GET",
-          "mode": "cors"
-        })
-          .then(res => res.json())
-          .then(res => res.payload.games
-            .filter(game => !game.sellable || game.sellable.type === "free")
-            .map(game => gameJoltToGame(game))
-          )
-      ]);
-      return games.flat();
+        getAllGOGGames(),
+        getAllJoltGames()
+      ]).then(games => games.flat());
+
+      const dbGames = await Game.find();
+      let created = 0, updated = 0, errors = 0;
+      games.forEach(game => {
+        const existingGame = dbGames.find((dbGame) =>
+          dbGame.website === game.website &&
+          dbGame.websiteId === game.websiteId
+        );
+        if (existingGame) {
+          Game.updateOne({ "_id": existingGame._id }, game,
+            (err, doc) => { if (err) errors++ })
+          updated++
+        } else {
+          Game.create(game);
+          created++
+        }
+      });
+      console.log("Updating Games Database: Created %d Updated %d Errors %d", created, updated, errors)
     } catch (err) {
       console.log(err);
     }
-    // }, 1000 * 5)//1000 * 60 * 60 * 12);
   }
+}
+
+const getAllGOGGames = async () => {
+  let pages = 1;
+  const result = []
+  for (let i = 1; i <= pages; i++) {
+    const gogGames = await fetch('https://www.gog.com/games/ajax/filtered?mediaType=game&page=' + i + '&price=free&sort=popularity')
+      .then(games => games.json())
+      .then(games => {
+        pages = games.totalPages
+        return games.products.map(game => gogToGame(game))
+      });
+    result.push(...gogGames);
+  }
+  return result;
 }
 
 
@@ -82,7 +94,7 @@ const gogToGame = (game) => {
     category: game.category,
     url: 'https://gog.com' + game.url,
     website: 'gog.com',
-    'website-id': '' + game.id
+    websiteId: '' + game.id
   }
 }
 // hacer que todos busquen screenshots?
@@ -94,7 +106,7 @@ const epicToGame = (game) => {
     category: null,
     url: 'https://epicgames.com/store/product/' + game.productSlug,
     website: 'epicgames.com',
-    'website-id': '' + game.id
+    websiteId: '' + game.id
   }
 }
 
@@ -106,7 +118,7 @@ const originToGame = (game) => {
     category: null,
     url: 'https://www.origin.com/store' + game.path,
     website: 'origin.com',
-    'website-id': game.gameName
+    websiteId: game.gameName
   }
 }
 
@@ -118,10 +130,35 @@ const gameJoltToGame = (game) => {
     category: null,
     url: 'https://gamejolt.com/games/' + game.path + '/' + game.id,
     website: 'gamejolt.com',
-    'website-id': '' + game.id
+    websiteId: '' + game.id
   }
 }
 
-
+const getAllJoltGames = async () => {
+  let pages = 1;
+  const result = []
+  for (let i = 1; i <= pages; i++) {
+    const joltGames = await fetch("https://gamejolt.com/site-api/web/discover/games?section=featured&page=" + i + "&f_price=free&f_status[]=complete", {
+      "credentials": "include",
+      "headers": {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:76.0) Gecko/20100101 Firefox/76.0",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Language": "es-AR,es;q=0.8,en-US;q=0.5,en;q=0.3",
+        "Pragma": "no-cache",
+        "Cache-Control": "no-cache"
+      },
+      "referrer": "https://gamejolt.com/games/featured?price=free&status=complete&page=2",
+      "method": "GET",
+      "mode": "cors"
+    })
+      .then(games => games.json())
+      .then(games => {
+        pages = Math.ceil(games.payload.gamesCount / games.payload.perPage);
+        return games.payload.games.map(game => gameJoltToGame(game))
+      })
+    result.push(...joltGames);
+  }
+  return result;
+}
 
 module.exports = consumer;
