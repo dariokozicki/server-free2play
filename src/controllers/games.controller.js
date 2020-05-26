@@ -8,10 +8,40 @@ gamesCtrl.getGames = async (req, res) => {
 }
 
 gamesCtrl.getGamesPage = async (req, res) => {
+  let query;
+  if (req.query.search) {
+    regex = {
+      $regex: ".*" + req.query.search + ".*",
+      $options: 'i'
+    }
+    query = {
+      $or: [
+        {
+          "title": regex
+        },
+        {
+          "publisher": regex
+        },
+        {
+          "category": regex
+        },
+        {
+          "website": regex
+        }
+      ]
+    }
+  } else {
+    query = {}
+  }
+
+  const sortBy = {}
+  if (req.query.sortBy) {
+    sortBy[req.query.sortBy] = 1;
+  }
   const pageSize = 12;
   const skips = pageSize * (req.query.pageNum - 1);
-  const games = await Game.find().skip(skips).limit(pageSize);
-  const count = await Game.countDocuments();
+  const games = await Game.find(query).sort(sortBy).skip(skips).limit(pageSize);
+  const count = await Game.countDocuments(query);
   res.json({ games: games, total: count });
 }
 

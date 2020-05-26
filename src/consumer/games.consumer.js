@@ -103,7 +103,7 @@ const epicToGame = (game) => {
     publisher: game.seller.name,
     image: game.keyImages[4].url,
     title: game.title,
-    category: null,
+    category: 'Action',
     url: 'https://epicgames.com/store/product/' + game.productSlug,
     website: 'epicgames.com',
     websiteId: '' + game.id
@@ -115,7 +115,7 @@ const originToGame = (game) => {
     publisher: 'Origin',
     image: game.image,
     title: game.gameName,
-    category: null,
+    category: 'Action',
     url: 'https://www.origin.com/store' + game.path,
     website: 'origin.com',
     websiteId: game.gameName
@@ -127,7 +127,7 @@ const gameJoltToGame = (game) => {
     publisher: game.developer.name,
     image: game.img_thumbnail,
     title: game.title,
-    category: null,
+    category: 'Action',
     url: 'https://gamejolt.com/games/' + game.path + '/' + game.id,
     website: 'gamejolt.com',
     websiteId: '' + game.id
@@ -137,7 +137,7 @@ const gameJoltToGame = (game) => {
 const getAllJoltGames = async () => {
   let pages = 1;
   const result = []
-  for (let i = 1; i <= pages; i++) {
+  for (let i = 1; i <= Math.ceil(pages / 3); i++) {
     const joltGames = await fetch("https://gamejolt.com/site-api/web/discover/games?section=featured&page=" + i + "&f_price=free&f_status[]=complete", {
       "credentials": "include",
       "headers": {
