@@ -5,6 +5,7 @@ const consumer = {
   updateGames: async () => {
     try {
       let games = await Promise.all([
+        getAllGOGGames(),
         fetch("https://api1.origin.com/xsearch/store/en_us/mex/products?searchTerm=free&sort=rank%20desc%2CreleaseDate%20desc%2Ctitle%20desc&start=0&rows=20&isGDP=true", {
           "credentials": "omit",
           "headers": {
@@ -41,7 +42,6 @@ const consumer = {
         })
           .then(games => games.json())
           .then(games => games.data.Catalog.searchStore.elements.map(game => epicToGame(game))),
-        getAllGOGGames(),
         getAllJoltGames()
       ]).then(games => games.flat());
 

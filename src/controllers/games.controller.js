@@ -46,6 +46,7 @@ gamesCtrl.getGamesPage = async (req, res) => {
 }
 
 gamesCtrl.createGame = async (req, res) => {
+  return res.status(405).end()
   const { title, category, url, website, websiteId, publisher, image } = req.body;
   const game = await Game.create({ title, category, url, website, websiteId, publisher, image })
   res.json({ message: "Game created.", id: game._id });
@@ -60,6 +61,7 @@ gamesCtrl.getGame = async (req, res) => {
 
 
 gamesCtrl.updateGame = async (req, res) => {
+  return res.status(405).end()
   const { title, category, url, website, websiteId, publisher, image } = req.body;
   const game = await Game.findByIdAndUpdate(req.params.id, { title, category, url, website, websiteId, publisher, image })
   res.json({ message: game ? "Game updated." : "Game not found." })
@@ -67,6 +69,7 @@ gamesCtrl.updateGame = async (req, res) => {
 
 
 gamesCtrl.deleteGame = async (req, res) => {
+  return res.status(405).end()
   const game = await Game.findByIdAndDelete(req.params.id);
   res.json({ message: game ? "Game deleted." : "Game not found." })
 }
