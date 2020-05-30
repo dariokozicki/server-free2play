@@ -22,7 +22,11 @@ const userSchema = new Schema({
   favorites: [{
     type: [Schema.Types.ObjectId],
     ref: "Game"
-  }]
+  }],
+  image: {
+    type: String,
+    required: true
+  }
 }, {
   timestamps: true
 })
@@ -38,7 +42,8 @@ function validateUser(user) {
     username: Joi.string().min(4).max(50).required(),
     email: Joi.string().min(1).max(255).required().email(),
     password: Joi.string().min(4).max(255).required(),
-    favorites: Joi.array().required()
+    favorites: Joi.array().required(),
+    image: Joi.string().required()
   };
 
   return Joi.validate(user, schema);

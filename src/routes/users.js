@@ -7,10 +7,14 @@ router.route('/')
   .get(usersCtrl.getUsers)
   .post(usersCtrl.createUser);
 
+router.route('/current')
+  .get(auth, usersCtrl.getCurrentUser)
+
 router.route('/:id')
   .get(usersCtrl.getUser)
-  .put(usersCtrl.updateUser)
+  .put(auth, usersCtrl.updateUser)
   .delete(usersCtrl.deleteUser)
+
 
 router.route('/:id/favorites')
   .get(auth, usersCtrl.getAllFavorites)

@@ -12,6 +12,7 @@ usersCtrl.getUsers = async (req, res) => {
       {
         _id: user._id,
         username: user.username,
+        image: user.image,
         favorites: user.favorites,
         email: user.email,
         createdAt: user.createdAt
@@ -21,12 +22,18 @@ usersCtrl.getUsers = async (req, res) => {
 }
 
 usersCtrl.logIn = async (req, res) => {
-  const { username, password } = req.body;
-  const user = await User.findOne({ username: username, password: await bcrypt(password, 10) });
+  let { username, password } = req.body;
+  const user = await User.findOne({ username: username });
   if (user) {
-    console.log("User %s logged in", user.username)
-    var token = user.generateAuthToken();
-    res.status(200).header("x-auth-token", token)
+    bcrypt.compare(password, user.password, (err, same) => {
+      if (same) {
+        console.log("User %s logged in", user.username)
+        var token = user.generateAuthToken();
+        res.status(200).header("x-auth-token", token).end();
+      } else {
+        res.status(401).end();
+      }
+    })
   } else {
     res.status(401).end()
   }
@@ -45,17 +52,20 @@ usersCtrl.createUser = async (req, res) => {
   if (repeated) return res.status(400).send("User already in use.")
   const user = new User({
     username: req.body.username,
-    password: await bcrypt.hash(req.body.password, 10),
+    password: req.body.password,
     favorites: req.body.favorites,
-    email: req.body.email
+    email: req.body.email,
+    image: req.body.image
   })
+  user.password = await bcrypt.hash(user.password, 10);
   await user.save();
   const token = user.generateAuthToken();
   res.header("x-auth-token", token).send({
     _id: user._id,
     username: user.username,
     email: user.email,
-    favorites: user.favorites
+    favorites: user.favorites,
+    image: user.image
   })
 }
 
@@ -69,11 +79,26 @@ usersCtrl.getUser = async (req, res) => {
   }
 }
 
+usersCtrl.getCurrentUser = async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password");
+  if (user) {
+    return res.status(200).json(user);
+  } else {
+    return res.status(404).end();
+  }
+}
+
 
 usersCtrl.updateUser = async (req, res) => {
   const { error } = validate(req.body);
   if (error) return res.status(400).send(error.details[0].message)
-  const user = await User.findByIdAndUpdate(req.params.id, { username, password, favorites });
+  const user = await User.findByIdAndUpdate(req.params.id,
+    {
+      username: req.user.username,
+      password: req.user.password,
+      favorites: req.user.favorites,
+      image: req.user.image
+    });
   if (user) {
     res.status(204).end()
   } else {
@@ -97,7 +122,7 @@ usersCtrl.getAllFavorites = async (req, res) => {
     .select("-password")
     .populate("favorites");
   if (user) {
-    res.status(200).json(user)
+    res.status(200).json(user.favorites)
   } else {
     res.status(404).send("User not found.");
   }

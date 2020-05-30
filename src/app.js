@@ -7,7 +7,12 @@ const cookieParser = require("cookie-parser")
 app.set('port', process.env.PORT || 4000);
 
 //middlewares
-app.use(cors());
+const corsOptions = {
+  exposedHeaders: 'x-auth-token'
+}
+
+
+app.use(cors(corsOptions));
 app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(express.json());
