@@ -2,9 +2,6 @@ const usersCtrl = {};
 const { User, validate } = require("../models/user");
 const bcrypt = require("bcrypt");
 
-const domain = (process.env.DOMAIN || 'http://localhost:4000')
-const jwtDurationSeconds = (process.env.JWT_DURATION || 1) * 60 * 60
-
 usersCtrl.getUsers = async (req, res) => {
   const users = await User.find();
   res.json(users
@@ -90,15 +87,13 @@ usersCtrl.getCurrentUser = async (req, res) => {
 
 
 usersCtrl.updateUser = async (req, res) => {
-  const { error } = validate(req.body);
-  if (error) return res.status(400).send(error.details[0].message)
-  const user = await User.findByIdAndUpdate(req.params.id,
-    {
-      username: req.user.username,
-      password: req.user.password,
-      favorites: req.user.favorites,
-      image: req.user.image
-    });
+  let user = await User.findById(req.params.id);
+  user.username = req.body.username || user.username;
+  user.password = req.body.password || user.password;
+  user.image = req.body.image || user.image;
+  user.favorites = req.body.favorites || user.favorites;
+  user.email = req.body.email || user.email;
+  user = user.save();
   if (user) {
     res.status(204).end()
   } else {
