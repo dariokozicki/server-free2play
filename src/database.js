@@ -15,5 +15,6 @@ const connection = mongoose.connection;
 connection.once('open', () => {
   console.log("Database is connected")
   console.log("Setting interval for API requests every %d day(s)", days);
+  consumer.updateGames();
   setInterval(consumer.updateGames, days * 1000 * 60 * 60 * 24)
 });

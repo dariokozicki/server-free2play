@@ -1,5 +1,5 @@
 const gamesCtrl = {};
-const consumer = require('../consumer/games.consumer')
+const consumer = require('../consumer/games.consumer.js')
 const Game = require('../models/Game')
 
 gamesCtrl.getGames = async (req, res) => {

@@ -1,5 +1,5 @@
 const usersCtrl = {};
-const { User, validate } = require("../models/user");
+const { User, validate } = require("../models/User.js");
 const bcrypt = require("bcrypt");
 
 usersCtrl.getUsers = async (req, res) => {
