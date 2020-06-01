@@ -69,11 +69,7 @@ usersCtrl.createUser = async (req, res) => {
 
 usersCtrl.getUser = async (req, res) => {
   const user = await User.findById(req.params.id).select("-password");
-  if (user) {
-    return res.status(200).json(user);
-  } else {
-    return res.status(404).end();
-  }
+  return user ? res.status(200).json(user) : res.status(404).end();
 }
 
 usersCtrl.getCurrentUser = async (req, res) => {

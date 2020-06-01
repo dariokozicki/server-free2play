@@ -10,23 +10,23 @@ gamesCtrl.getGames = async (req, res) => {
 gamesCtrl.getGamesPage = async (req, res) => {
   let query;
   if (req.query.search) {
-    regex = {
-      $regex: ".*" + req.query.search + ".*",
+    regex = (param) => ({
+      $regex: ".*" + param + ".*",
       $options: 'i'
-    }
+    })
     query = {
       $or: [
         {
-          "title": regex
+          "title": regex(req.query.search)
         },
         {
-          "publisher": regex
+          "publisher": regex(req.query.search)
         },
         {
-          "category": regex
+          "category": regex(req.query.search)
         },
         {
-          "website": regex
+          "website": regex(req.query.search)
         }
       ]
     }
