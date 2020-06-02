@@ -21,5 +21,5 @@ app.use(express.json());
 //routes
 app.use('/api/users', require('./routes/users'))
 app.use('/api/games', require('./routes/games'))
-
+app.use('/', (req, res) => { res.status(200).end() })
 module.exports = app;
