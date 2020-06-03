@@ -1,4 +1,5 @@
 ## Free2Play - Server Application
+![Uptime Robot status](https://img.shields.io/uptimerobot/status/m785104271-9612d454c6070a4613db20f9) ![GitHub last commit](https://img.shields.io/github/last-commit/dariokozicki/server-free2play) ![Uptime Robot ratio (30 days)](https://img.shields.io/uptimerobot/ratio/m785104271-9612d454c6070a4613db20f9) [![Build Status](https://travis-ci.org/dariokozicki/server-free2play.svg?branch=master)](https://travis-ci.org/dariokozicki/server-free2play) [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 [Click here to see it live!](https://freetoplay.ml)
 
